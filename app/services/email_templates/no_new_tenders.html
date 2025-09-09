@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İhale Güncellemesi</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #2d3748; 
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+        }
+        .email-container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header { 
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #2d3748; 
+            padding: 40px 30px; 
+            text-align: center;
+            position: relative;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 20px solid #fed6e3;
+        }
+        .header h1 { 
+            font-size: 28px; 
+            margin-bottom: 10px; 
+            font-weight: 700;
+        }
+        .header p { 
+            font-size: 16px; 
+            opacity: 0.8;
+        }
+        .content { 
+            padding: 40px 30px; 
+            text-align: center;
+        }
+        .status-icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+            display: block;
+        }
+        .message-box {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+        }
+        .message-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+        .message-text {
+            font-size: 16px;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .info-item {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        .info-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #a8edea;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .next-check {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 30px 0;
+        }
+        .next-check h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .footer { 
+            background: #f7fafc;
+            padding: 30px; 
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            color: #718096; 
+            font-size: 14px;
+        }
+        .footer-logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        @media (max-width: 600px) {
+            .email-container { margin: 10px; }
+            .header { padding: 30px 20px; }
+            .content { padding: 30px 20px; }
+            .header h1 { font-size: 24px; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>📊 İhale Güncellemesi</h1>
+            <p>{{ date }} tarihli kontrol raporu</p>
+        </div>
+
+        <div class="content">
+            <span class="status-icon">🔍</span>
+            
+            <div class="message-box">
+                <div class="message-title">Yeni İhale Bulunamadı</div>
+                <div class="message-text">
+                    Son kontrol zamanından bu yana yayınlanan yeni ihale bulunmamaktadır. 
+                    Sistem aktif olarak çalışmaya devam ediyor.
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-number">0</span>
+                    <span class="info-label">Yeni İhale</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-number">✓</span>
+                    <span class="info-label">Sistem Aktif</span>
+                </div>
+            </div>
+
+            <div class="next-check">
+                <h3>⏰ Sonraki Kontrol</h3>
+                <p>Sistem otomatik olarak yeni ihaleleri kontrol etmeye devam edecektir.</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-logo">İhale Takip Sistemi</div>
+            <p>Bu email otomatik olarak gönderilmiştir.</p>
+            <p>Yeni ihaleler bulunduğunda derhal bilgilendirileceksiniz.</p>
+        </div>
+    </div>
+</body>
+</html>
