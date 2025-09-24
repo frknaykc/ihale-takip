@@ -6,6 +6,7 @@ from datetime import datetime
 from ..db import SessionLocal
 from .. import crud, models
 from .scraper_base import BaseScraper, ScrapedTender
+from .ml.security_model import score_text
 from .scrapers.dmo_scraper import DMOScraper
 from .scrapers.turksat_scraper import TurksatScraper
 from .scrapers.teias_scraper import TEIASScraper
@@ -53,6 +54,13 @@ async def run_all_scrapers(sites: List[str] = None) -> int:
                 
                 scraper_count = 0
                 for it in items:
+                    text = f"{it.title or ''}\n{it.description or ''}"
+                    score = score_text(text)
+                    if not score.get("accept"):
+                        print(
+                            f"✗ Dropped non-security tender from {s.slug}: sim={score.get('sim'):.2f} prob={score.get('prob'):.2f}"
+                        )
+                        continue
                     try:
                         created = crud.create_tender_if_new(
                             db=db,
@@ -61,6 +69,10 @@ async def run_all_scrapers(sites: List[str] = None) -> int:
                             url=it.url,
                             description=it.description,
                             published_at=it.published_at,
+                            security_label="siber",
+                            security_prob=score.get("prob"),
+                            security_sim=score.get("sim"),
+                            model_version=score.get("model_version"),
                         )
                         if created:
                             inserted += 1

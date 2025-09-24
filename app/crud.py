@@ -30,6 +30,10 @@ def create_tender_if_new(
 	url: str,
 	description: str | None = None,
 	published_at: datetime | None = None,
+    security_label: str | None = None,
+    security_prob: float | None = None,
+    security_sim: float | None = None,
+    model_version: str | None = None,
 ) -> models.Tender | None:
 	unique_hash = compute_tender_hash(title, url, published_at)
 	existing = db.execute(
@@ -45,6 +49,10 @@ def create_tender_if_new(
 		description=(description or "").strip() or None,
 		published_at=published_at,
 		unique_hash=unique_hash,
+        security_label=security_label,
+        security_prob=security_prob,
+        security_sim=security_sim,
+        model_version=model_version,
 	)
 	db.add(tender)
 	db.commit()
