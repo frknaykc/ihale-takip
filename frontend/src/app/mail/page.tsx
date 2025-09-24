@@ -11,11 +11,6 @@ interface Source {
   slug: string
 }
 
-interface Category {
-  key: string
-  name: string
-}
-
 interface MailSchedule {
   id: string
   sender_email: string
@@ -65,7 +60,6 @@ interface ScheduleForm {
 
 export default function MailAutomationPage() {
   const [sources, setSources] = useState<Source[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
   const [schedules, setSchedules] = useState<MailSchedule[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -106,31 +100,21 @@ export default function MailAutomationPage() {
 
   useEffect(() => {
     loadSources()
-    loadCategories()
     loadSchedules()
   }, [])
 
   const loadSources = async () => {
     try {
-      const response = await axios.get('/api/tenders/sources')
+      const response = await axios.get('http://localhost:8000/api/tenders/sources')
       setSources(response.data)
     } catch (err) {
       console.error('Error loading sources:', err)
     }
   }
 
-  const loadCategories = async () => {
-    try {
-      const response = await axios.get('/api/tenders/categories')
-      setCategories(response.data)
-    } catch (err) {
-      console.error('Error loading categories:', err)
-    }
-  }
-
   const loadSchedules = async () => {
     try {
-      const response = await axios.get('/api/mail/schedules')
+      const response = await axios.get('http://localhost:8000/api/mail/schedules')
       setSchedules(response.data)
     } catch (err) {
       console.error('Error loading schedules:', err)
@@ -148,7 +132,7 @@ export default function MailAutomationPage() {
     setSuccess('')
 
     try {
-      const response = await axios.post('/api/mail/send-manual', {
+      const response = await axios.post('http://localhost:8000/api/mail/send-manual', {
         ...manualForm,
         recipient_emails: manualForm.recipient_emails.split(',').map((email: string) => email.trim())
       })
@@ -173,7 +157,7 @@ export default function MailAutomationPage() {
         sender_email: manualForm.sender_email,
         recipient_email: manualForm.sender_email
       })
-      await axios.post(`/api/mail/test?${params.toString()}`)
+      await axios.post(`http://localhost:8000/api/mail/test?${params.toString()}`)
       setSuccess('Test maili gönderildi, gelen kutunuzu kontrol edin')
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Test maili hatası')
@@ -198,7 +182,7 @@ export default function MailAutomationPage() {
     setSuccess('')
 
     try {
-      await axios.post('/api/mail/schedule', {
+      await axios.post('http://localhost:8000/api/mail/schedule', {
         ...scheduleForm,
         recipient_emails: scheduleForm.recipient_emails.split(',').map((email: string) => email.trim())
       })
@@ -222,7 +206,7 @@ export default function MailAutomationPage() {
 
   const toggleSchedule = async (scheduleId: string) => {
     try {
-      await axios.put(`/api/mail/schedules/${scheduleId}/toggle`)
+      await axios.put(`http://localhost:8000/api/mail/schedules/${scheduleId}/toggle`)
       loadSchedules()
       setSuccess('Mail otomasyonu durumu güncellendi')
     } catch (err) {
@@ -236,7 +220,7 @@ export default function MailAutomationPage() {
     }
 
     try {
-      await axios.delete(`/api/mail/schedules/${scheduleId}`)
+      await axios.delete(`http://localhost:8000/api/mail/schedules/${scheduleId}`)
       loadSchedules()
       setSuccess('Mail otomasyonu silindi')
     } catch (err) {
@@ -419,11 +403,8 @@ export default function MailAutomationPage() {
                     className={inputClasses.small}
                   >
                     <option value="">📋 Tüm Kategoriler</option>
-                    {categories.map((category) => (
-                      <option key={category.key} value={category.key}>
-                        {category.name}
-                      </option>
-                    ))}
+                    <option value="bilisim_teknolojileri">💻 Bilişim & Güvenlik</option>
+                    <option value="diger">📋 Diğer</option>
                   </select>
                 </div>
 
@@ -669,11 +650,8 @@ export default function MailAutomationPage() {
                     className={inputClasses.small}
                   >
                     <option value="">📋 Tüm Kategoriler</option>
-                    {categories.map((category) => (
-                      <option key={category.key} value={category.key}>
-                        {category.name}
-                      </option>
-                    ))}
+                    <option value="bilisim_teknolojileri">💻 Bilişim & Güvenlik</option>
+                    <option value="diger">📋 Diğer</option>
                   </select>
                 </div>
 

@@ -47,3 +47,48 @@ class EmailRequest(BaseModel):
 	date_to: Optional[datetime] = None
 	limit: int = 100
 	offset: int = 0
+
+
+# User schemas
+class UserBase(BaseModel):
+	username: str
+	email: EmailStr
+	full_name: Optional[str] = None
+	is_active: bool = True
+	is_admin: bool = False
+
+
+class UserCreate(UserBase):
+	password: str
+
+
+class UserUpdate(BaseModel):
+	username: Optional[str] = None
+	email: Optional[EmailStr] = None
+	full_name: Optional[str] = None
+	password: Optional[str] = None
+	is_active: Optional[bool] = None
+	is_admin: Optional[bool] = None
+
+
+class UserOut(UserBase):
+	id: int
+	created_at: datetime
+	last_login: Optional[datetime] = None
+
+	class Config:
+		from_attributes = True
+
+
+class UserLogin(BaseModel):
+	username: str
+	password: str
+
+
+class Token(BaseModel):
+	access_token: str
+	token_type: str
+
+
+class TokenData(BaseModel):
+	username: Optional[str] = None

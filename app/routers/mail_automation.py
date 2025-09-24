@@ -67,7 +67,6 @@ async def send_manual_mail(
             date_to=request.filters.get("date_to"),
             limit=request.filters.get("limit", 100),
             offset=0,
-            category=request.filters.get("category")
         )
         
         # Her alıcıya mail gönder

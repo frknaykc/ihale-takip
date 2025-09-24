@@ -13,8 +13,58 @@ from ..services.scrape_manager import trigger_scrape_once
 router = APIRouter(prefix="/tenders", tags=["tenders"])
 
 
+@router.get("/search", response_model=dict)
+async def search_tenders(
+    query: str = None,
+    source_slug: str = None,
+    date_from: str = None,
+    date_to: str = None,
+    limit: int = 20,
+    offset: int = 0,
+    db: Session = Depends(get_db)
+):
+    try:
+        from datetime import datetime
+        
+        # Tarih dönüşümleri
+        date_from_obj = None
+        date_to_obj = None
+        if date_from:
+            try:
+                date_from_obj = datetime.fromisoformat(date_from)
+            except:
+                pass
+        if date_to:
+            try:
+                date_to_obj = datetime.fromisoformat(date_to)
+            except:
+                pass
+        
+        results = crud.filter_tenders(
+            db=db,
+            query=query,
+            source_slug=source_slug,
+            date_from=date_from_obj,
+            date_to=date_to_obj,
+            limit=limit,
+            offset=offset,
+        )
+        
+        # Toplam sayıyı hesapla (basit yaklaşım)
+        total = len(results) + offset if len(results) == limit else len(results) + offset
+        
+        return {
+            "tenders": results,
+            "total": total,
+            "limit": limit,
+            "offset": offset
+        }
+    except Exception as e:
+        print(f"Tender search error: {e}")
+        return {"tenders": [], "total": 0, "limit": limit, "offset": offset}
+
 @router.post("/search", response_model=List[TenderOut])
-async def search_tenders(filters: TenderFilter, db: Session = Depends(get_db)):
+async def search_tenders_post(filters: TenderFilter, db: Session = Depends(get_db)):
     try:
         results = crud.filter_tenders(
             db=db,

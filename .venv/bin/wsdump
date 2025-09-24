@@ -1,4 +1,4 @@
-#!/Users/furkana/Desktop/ihaletakip/.venv/bin/python3.12
+#!/Users/furkana/Desktop/ihale-takip/.venv/bin/python3.12
 # -*- coding: utf-8 -*-
 import re
 import sys

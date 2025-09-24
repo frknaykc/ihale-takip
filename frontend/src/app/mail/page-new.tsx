@@ -105,7 +105,7 @@ export default function MailAutomationPage() {
 
   const loadSources = async () => {
     try {
-      const response = await axios.get('/api/tenders/sources')
+      const response = await axios.get('http://localhost:8000/api/tenders/sources')
       setSources(response.data)
     } catch (err) {
       console.error('Error loading sources:', err)
@@ -114,7 +114,7 @@ export default function MailAutomationPage() {
 
   const loadSchedules = async () => {
     try {
-      const response = await axios.get('/api/mail/schedules')
+      const response = await axios.get('http://localhost:8000/api/mail/schedules')
       setSchedules(response.data)
     } catch (err) {
       console.error('Error loading schedules:', err)
@@ -132,7 +132,7 @@ export default function MailAutomationPage() {
     setSuccess('')
 
     try {
-      const response = await axios.post('/api/mail/send-manual', {
+      const response = await axios.post('http://localhost:8000/api/mail/send-manual', {
         ...manualForm,
         recipient_emails: manualForm.recipient_emails.split(',').map((email: string) => email.trim())
       })
@@ -157,7 +157,7 @@ export default function MailAutomationPage() {
         sender_email: manualForm.sender_email,
         recipient_email: manualForm.sender_email
       })
-      await axios.post(`/api/mail/test?${params.toString()}`)
+      await axios.post(`http://localhost:8000/api/mail/test?${params.toString()}`)
       setSuccess('Test maili gönderildi, gelen kutunuzu kontrol edin')
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Test maili hatası')
@@ -182,7 +182,7 @@ export default function MailAutomationPage() {
     setSuccess('')
 
     try {
-      await axios.post('/api/mail/schedule', {
+      await axios.post('http://localhost:8000/api/mail/schedule', {
         ...scheduleForm,
         recipient_emails: scheduleForm.recipient_emails.split(',').map((email: string) => email.trim())
       })
@@ -206,7 +206,7 @@ export default function MailAutomationPage() {
 
   const toggleSchedule = async (scheduleId: string) => {
     try {
-      await axios.put(`/api/mail/schedules/${scheduleId}/toggle`)
+      await axios.put(`http://localhost:8000/api/mail/schedules/${scheduleId}/toggle`)
       loadSchedules()
       setSuccess('Mail otomasyonu durumu güncellendi')
     } catch (err) {
@@ -220,7 +220,7 @@ export default function MailAutomationPage() {
     }
 
     try {
-      await axios.delete(`/api/mail/schedules/${scheduleId}`)
+      await axios.delete(`http://localhost:8000/api/mail/schedules/${scheduleId}`)
       loadSchedules()
       setSuccess('Mail otomasyonu silindi')
     } catch (err) {
@@ -403,15 +403,8 @@ export default function MailAutomationPage() {
                     className={inputClasses.small}
                   >
                     <option value="">📋 Tüm Kategoriler</option>
-                    <option value="bilgisayar_parcasi">💻 Bilgisayar Parçası</option>
-                    <option value="bilgisayar_yazilimi">🖥️ Bilgisayar Yazılımı</option>
-                    <option value="guvenlik_yazilimi">🔐 Güvenlik Yazılımı</option>
-                    <option value="guvenlik_urunu">🛡️ Güvenlik Ürünü</option>
-                    <option value="siber_guvenlik">🔒 Siber Güvenlik</option>
-                    <option value="network_altyapi">🌐 Network & Altyapı</option>
-                    <option value="elektronik_donanim">⚡ Elektronik & Donanım</option>
-                    <option value="telekomunikasyon">📡 Telekomünikasyon</option>
-                    <option value="diger">📦 Diğer</option>
+                    <option value="bilisim_teknolojileri">💻 Bilişim & Güvenlik</option>
+                    <option value="diger">📋 Diğer</option>
                   </select>
                 </div>
 
@@ -657,15 +650,8 @@ export default function MailAutomationPage() {
                     className={inputClasses.small}
                   >
                     <option value="">📋 Tüm Kategoriler</option>
-                    <option value="bilgisayar_parcasi">💻 Bilgisayar Parçası</option>
-                    <option value="bilgisayar_yazilimi">🖥️ Bilgisayar Yazılımı</option>
-                    <option value="guvenlik_yazilimi">🔐 Güvenlik Yazılımı</option>
-                    <option value="guvenlik_urunu">🛡️ Güvenlik Ürünü</option>
-                    <option value="siber_guvenlik">🔒 Siber Güvenlik</option>
-                    <option value="network_altyapi">🌐 Network & Altyapı</option>
-                    <option value="elektronik_donanim">⚡ Elektronik & Donanım</option>
-                    <option value="telekomunikasyon">📡 Telekomünikasyon</option>
-                    <option value="diger">📦 Diğer</option>
+                    <option value="bilisim_teknolojileri">💻 Bilişim & Güvenlik</option>
+                    <option value="diger">📋 Diğer</option>
                   </select>
                 </div>
 

@@ -3,6 +3,8 @@ from sqlalchemy import select, func, and_, or_, desc
 from datetime import datetime
 import hashlib
 from . import models
+from .models import User
+from .utils import get_password_hash
 
 
 def ensure_source(db: Session, name: str, url: str, slug: str) -> models.Source:
@@ -35,6 +37,7 @@ def create_tender_if_new(
 	).scalar_one_or_none()
 	if existing:
 		return None
+
 	tender = models.Tender(
 		source_id=source.id,
 		title=title.strip(),
@@ -57,7 +60,6 @@ def filter_tenders(
 	date_to: datetime | None,
 	limit: int,
 	offset: int,
-	category: str | None = None,
 ):
 	from sqlalchemy.orm import joinedload
 	stmt = select(models.Tender).options(joinedload(models.Tender.source))
@@ -84,10 +86,70 @@ def filter_tenders(
 	
 	stmt = stmt.order_by(desc(models.Tender.published_at), desc(models.Tender.id)).limit(limit).offset(offset)
 	results = db.execute(stmt).scalars().all()
-
-	# Kategori filtresi
-	if category:
-		from .lib.categories import classifyTender
-		results = [tender for tender in results if classifyTender(tender.title, tender.description or "") == category]
-	
 	return results
+
+
+# User CRUD operations
+def get_user(db: Session, user_id: int) -> User | None:
+	"""Get user by ID."""
+	return db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+
+
+def get_user_by_username(db: Session, username: str) -> User | None:
+	"""Get user by username."""
+	return db.execute(select(User).where(User.username == username)).scalar_one_or_none()
+
+
+def get_user_by_email(db: Session, email: str) -> User | None:
+	"""Get user by email."""
+	return db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+
+
+def get_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
+	"""Get list of users."""
+	return db.execute(select(User).offset(skip).limit(limit)).scalars().all()
+
+
+def create_user(db: Session, user_data: dict) -> User:
+	"""Create a new user."""
+	hashed_password = get_password_hash(user_data["password"])
+	db_user = User(
+		username=user_data["username"],
+		email=user_data["email"],
+		hashed_password=hashed_password,
+		full_name=user_data.get("full_name"),
+		is_active=user_data.get("is_active", True),
+		is_admin=user_data.get("is_admin", False)
+	)
+	db.add(db_user)
+	db.commit()
+	db.refresh(db_user)
+	return db_user
+
+
+def update_user(db: Session, user_id: int, user_data: dict) -> User | None:
+	"""Update user information."""
+	db_user = get_user(db, user_id)
+	if not db_user:
+		return None
+	
+	for field, value in user_data.items():
+		if field == "password" and value:
+			db_user.hashed_password = get_password_hash(value)
+		elif hasattr(db_user, field):
+			setattr(db_user, field, value)
+	
+	db.commit()
+	db.refresh(db_user)
+	return db_user
+
+
+def delete_user(db: Session, user_id: int) -> bool:
+	"""Delete a user."""
+	db_user = get_user(db, user_id)
+	if not db_user:
+		return False
+	
+	db.delete(db_user)
+	db.commit()
+	return True

@@ -19,10 +19,21 @@ class Settings(BaseSettings):
     NOTIFICATION_RECIPIENTS: List[EmailStr] = ["infrasis.otomasyon@gmail.com"]
     ERROR_NOTIFICATION_RECIPIENTS: List[EmailStr] = ["infrasis.otomasyon@gmail.com"]
 
+    # Tender filtreleme ayarları
+    ALLOWED_TENDER_CATEGORIES: List[str] = ["bilisim_teknolojileri"]
+
     # CORS ayarları
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
+    
+    # JWT ayarları
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
-    @field_validator("NOTIFICATION_RECIPIENTS", "ERROR_NOTIFICATION_RECIPIENTS", mode="before")
+    @field_validator(
+        "NOTIFICATION_RECIPIENTS",
+        "ERROR_NOTIFICATION_RECIPIENTS",
+        "ALLOWED_TENDER_CATEGORIES",
+        mode="before",
+    )
     def validate_list(cls, v):
         if isinstance(v, str):
             return json.loads(v)

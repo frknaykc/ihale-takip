@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import List
 import json
 import os
+import uuid
 from datetime import time, datetime
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
@@ -10,7 +11,6 @@ from ..models.schedule import ScheduleUpdate, ScheduleConfig
 from ..db import get_db
 from .. import crud
 from ..services.email_service import send_email
-from ..config import settings
 
 router = APIRouter()
 
@@ -94,7 +94,6 @@ async def send_manual_mail(request: ManualMailRequest, db: Session = Depends(get
             date_to=date_to,
             limit=filters.get('limit', 100),
             offset=0,
-            category=filters.get('category')
         )
         
         # Email içeriğini template ile hazırla
@@ -107,7 +106,7 @@ async def send_manual_mail(request: ManualMailRequest, db: Session = Depends(get
             'tender_count': tender_count,
             'tenders': tenders[:50],  # İlk 50 ihale
             'sources_count': 1 if filters.get('source_slug') else None,
-            'categories_count': 1 if filters.get('category') else None,
+            'categories_count': None,
             'filters_applied': []
         }
         
@@ -117,10 +116,6 @@ async def send_manual_mail(request: ManualMailRequest, db: Session = Depends(get
         if filters.get('source_slug'):
             source = next((t.source.name for t in tenders if t.source and t.source.slug == filters['source_slug']), filters['source_slug'])
             template_data['filters_applied'].append(f"Kaynak: {source}")
-        if filters.get('category'):
-            from ..lib.categories import categories
-            category_name = categories.get(filters['category'], {}).get('name', filters['category'])
-            template_data['filters_applied'].append(f"Kategori: {category_name}")
         if filters.get('date_from'):
             template_data['filters_applied'].append(f"Başlangıç: {filters['date_from']}")
         if filters.get('date_to'):
@@ -203,3 +198,80 @@ async def test_mail(sender_email: EmailStr, recipient_email: EmailStr):
             status_code=500,
             detail=f"Test maili gönderimi sırasında hata: {str(e)}"
         )
+
+
+# Yeni endpoint'ler - Frontend için gerekli
+class ScheduleRequest(BaseModel):
+    sender_email: EmailStr
+    recipient_emails: List[EmailStr]
+    subject: str
+    schedule_type: str = "daily"
+    times: List[str]
+    filters: dict
+    is_active: bool = True
+
+class MailSchedule(BaseModel):
+    id: str
+    sender_email: str
+    recipient_emails: List[str]
+    subject: str
+    schedule_type: str
+    scheduled_time: str = None
+    scheduled_date: str = None
+    filters: dict
+    is_active: bool
+    created_at: str
+    last_sent: str = None
+    next_run: str = None
+    times: List[str] = []
+
+# Basit in-memory storage (production'da veritabanı kullanılmalı)
+mail_schedules = {}
+
+@router.get("/schedules", response_model=List[MailSchedule])
+async def get_mail_schedules():
+    """Tüm mail otomasyonlarını listele"""
+    return list(mail_schedules.values())
+
+@router.post("/schedule", response_model=MailSchedule)
+async def create_mail_schedule(request: ScheduleRequest):
+    """Yeni mail otomasyonu oluştur"""
+    schedule_id = str(uuid.uuid4())
+    
+    schedule = MailSchedule(
+        id=schedule_id,
+        sender_email=str(request.sender_email),
+        recipient_emails=[str(email) for email in request.recipient_emails],
+        subject=request.subject,
+        schedule_type=request.schedule_type,
+        times=request.times,
+        filters=request.filters,
+        is_active=request.is_active,
+        created_at=datetime.now().isoformat(),
+        last_sent=None,
+        next_run=datetime.now().isoformat() if request.is_active else None
+    )
+    
+    mail_schedules[schedule_id] = schedule
+    return schedule
+
+@router.put("/schedules/{schedule_id}/toggle")
+async def toggle_schedule(schedule_id: str):
+    """Mail otomasyonunu aktif/pasif yap"""
+    if schedule_id not in mail_schedules:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    
+    schedule = mail_schedules[schedule_id]
+    schedule.is_active = not schedule.is_active
+    schedule.next_run = datetime.now().isoformat() if schedule.is_active else None
+    
+    return {"message": "Schedule status updated", "is_active": schedule.is_active}
+
+@router.delete("/schedules/{schedule_id}")
+async def delete_schedule(schedule_id: str):
+    """Mail otomasyonunu sil"""
+    if schedule_id not in mail_schedules:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    
+    del mail_schedules[schedule_id]
+    return {"message": "Schedule deleted successfully"}
